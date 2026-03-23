@@ -3,6 +3,7 @@ import { signToken } from '@/lib/auth'
 import bcrypt from 'bcryptjs'
 
 export async function POST(request: Request) {
+  try {
   const { name, email, password, organizationName } = await request.json()
 
   if (!name || !email || !password || !organizationName) {
@@ -60,4 +61,8 @@ export async function POST(request: Request) {
   )
 
   return response
+  } catch (err) {
+    console.error('[register]', err)
+    return Response.json({ error: 'Erro interno', detail: (err as Error).message }, { status: 500 })
+  }
 }
