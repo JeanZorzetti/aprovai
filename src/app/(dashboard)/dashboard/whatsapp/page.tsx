@@ -38,9 +38,14 @@ export default function WhatsAppPage() {
       body: JSON.stringify({ instanceName: name }),
     });
     const data = await res.json();
-    if (data.qrcode?.base64) {
-      setQrCode(data.qrcode.base64);
+    // Evolution API v2: connect returns { base64, code } at root level
+    // create with qrcode:true returns { qrcode: { base64, code } }
+    const qr = data.base64 || data.qrcode?.base64;
+    if (qr) {
+      setQrCode(qr);
       setStatus("qr_ready");
+    } else {
+      console.error("[whatsapp] No QR in response:", data);
     }
   }
 
@@ -54,7 +59,14 @@ export default function WhatsAppPage() {
     const data = await res.json();
     if (data.instanceName) {
       setInstanceName(data.instanceName);
-      setTimeout(() => connectAndGetQr(data.instanceName), 2000);
+      // createInstance returns qrcode directly in result when qrcode:true
+      const qr = data.result?.qrcode?.base64;
+      if (qr) {
+        setQrCode(qr);
+        setStatus("qr_ready");
+      } else {
+        setTimeout(() => connectAndGetQr(data.instanceName), 2000);
+      }
     }
     setCreating(false);
   }

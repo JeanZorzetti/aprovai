@@ -12,5 +12,6 @@ export async function POST(request: Request) {
   }
 
   const result = await connectInstance(instanceName)
+  console.log('[whatsapp/connect] Evolution response:', JSON.stringify(result))
   return Response.json(result)
 }
