@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  phone     String?
+  plan      String   @default("trial")
+  credits   Int      @default(5)
+  users     User[]
+  analyses  Analysis[]
+  instance  WhatsAppInstance?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id             String       @id @default(cuid())
+  email          String       @unique
+  name           String
+  passwordHash   String
+  role           String       @default("corretor")
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model WhatsAppInstance {
+  id             String       @id @default(cuid())
+  instanceName   String       @unique
+  status         String       @default("disconnected")
+  organizationId String       @unique
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+}
+
+model Analysis {
+  id             String    @id @default(cuid())
+  status         String    @default("pending")
+
+  applicantName  String?
+  applicantCpf   String?
+  applicantPhone String
+
+  incomeEstimate Decimal?  @db.Decimal(12, 2)
+  riskScore      Int?
+  decision       String?
+  decisionReason String?
+
+  creditData     Json?
+  courtData      Json?
+  documentData   Json?
+
+  propertyRef    String?
+  rentValue      Decimal?  @db.Decimal(12, 2)
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  documents      Document[]
+  createdAt      DateTime  @default(now())
+  completedAt    DateTime?
+}
+
+model Document {
+  id            String   @id @default(cuid())
+  type          String
+  fileUrl       String
+  mimeType      String
+  extractedData Json?
+  analysisId    String
+  analysis      Analysis @relation(fields: [analysisId], references: [id])
+  createdAt     DateTime @default(now())
+}
