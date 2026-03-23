@@ -2,7 +2,9 @@ import { Queue, Worker } from 'bullmq'
 import { processAnalysis } from './analysis-worker'
 import IORedis from 'ioredis'
 
-const connection = new IORedis(process.env.REDIS_URL || 'redis://localhost:6379', {
+const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379'
+console.log('[queue] redis url:', redisUrl)
+const connection = new IORedis(redisUrl, {
   maxRetriesPerRequest: null,
 })
 
