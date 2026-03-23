@@ -25,8 +25,18 @@ const DOC_PROMPTS: Record<string, string> = {
 }
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as WebhookBody
+  let body: WebhookBody
+  try {
+    body = (await request.json()) as WebhookBody
+  } catch {
+    return Response.json({ ok: false, error: 'invalid json' }, { status: 400 })
+  }
+
+  console.log('[webhook] event:', body.event, 'instance:', body.instance)
+
   const { event, instance, data } = body
+
+  try {
 
   // Connection updates
   if (event === 'CONNECTION_UPDATE' || event === 'connection.update') {
@@ -155,4 +165,8 @@ export async function POST(request: Request) {
   }
 
   return Response.json({ ok: true })
+  } catch (err) {
+    console.error('[webhook] error:', err)
+    return Response.json({ ok: false, error: (err as Error).message }, { status: 500 })
+  }
 }
